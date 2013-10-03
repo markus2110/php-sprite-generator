@@ -4,12 +4,14 @@ require_once 'lib/Sprite.php';
 
 
 $sourcePath = dirname(__FILE__)."/test_icons/";
+$savePath = dirname(__FILE__).DS.'generated'.DS;
 
+mkdir($savePath, 0777, true);
 
 $S = new Sprite();
 $S->setSourceType('PATH');
 $S->setSourcePath($sourcePath);
-$S->setSavePath(dirname(__FILE__).DS.'css'.DS);
+$S->setSavePath($savePath);
 $S->setIncludeSubDir(true);
 $S->generate();
 
@@ -23,13 +25,7 @@ $S->generate();
     <link rel="stylesheet" type="text/css" href="css/MySprite.css">
     
     <style>
-      html,*{margin:0px;padding:0px;}
-      .button{
-
-        border:solid 1px;
-      }
-      i{display: inline-block;margin-top:5px;}
-      
+      textarea{width:90%;height:250px}
     </style>
     
     
@@ -40,6 +36,8 @@ $S->generate();
     <img src="data:image/png;base64,<?php echo base64_encode($S->getSpriteImageSource()) ?>" />
     
     <hr />
+    
+    <textarea><?php echo $S->getCssData() ?></textarea>
     
 
     
