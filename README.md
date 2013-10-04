@@ -20,20 +20,20 @@ Method chaining
 ---------------
     $Sprite = new SpriteGenerator();
     $Sprite->setScanSubDir(true)
-    ->setEnableFilters(true);
-    ->setSpriteMaxWidth(500);
-    ->setSpriteImageOffset(1);
-    ->generate();
+        ->setEnableFilters(true)
+        ->setSpriteMaxWidth(500)
+        ->setSpriteImageOffset(1)
+        ->generate();
 
 
 or set constructor options
 ---------------------------
     $options = array(
-    'SourcePath'  => $sourcePath,
-    'SavePath'    => $savePath,
-    'ScanSubDir'  => false,
-    'enableFilters' => false,
-    'SpriteImageOffset' => 0
+        'SourcePath'  => $sourcePath,
+        'SavePath'    => $savePath,
+        'ScanSubDir'  => false,
+        'enableFilters' => false,
+        'SpriteImageOffset' => 0
     );
     $Sprite = new SpriteGenerator($options);
     $Sprite->->generate();
