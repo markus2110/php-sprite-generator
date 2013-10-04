@@ -14,16 +14,7 @@
 
 defined('DS') || define('DS', DIRECTORY_SEPARATOR);
 
-class Sprite {
-  
-  
-  /**
-   * Image Source Type
-   * ZIP or PATH
-   * 
-   * @var string
-   */
-  private $sourceType = "PATH";
+class SpriteGenerator {
   
   /**
    * Path to images
@@ -60,7 +51,14 @@ class Sprite {
    * Set to true, to include images from subdirectories to sprite
    * @var boolean 
    */
-  private $includeSubDir = false;
+  private $scanSubDir = false;
+  
+  
+  /**
+   * enables the image filter
+   * @var boolean 
+   */
+  private $enableFilters = true;
   
   
   /**
@@ -74,13 +72,13 @@ class Sprite {
    * The max sprite width
    * @var integer
    */
-  private $spriteMaxWidth = 300;    
+  private $spriteMaxWidth = 1024;    
   
   /**
    * The offset between images
    * @var integer
    */
-  private $spriteImageOffset = 2;  
+  private $spriteImageOffset = 0;  
   
   
   /**
@@ -126,20 +124,13 @@ class Sprite {
   private $itemFilter = array(
   // StyleName => Class Suddix|Filter Args1|Arg2|Arg3|Arg4
     'NO-FILTER'       => '',
-    'GRAYSCALE'       => 'grey',
+    #'BRIGHTNESS'      => 'brightness|40',
     'COLORIZE'        => 'colorize|0|0|0|64',
+    'GRAYSCALE'       => 'grey',
+
     #'GAUSSIAN_BLUR'   => 'blur',
     #'NEGATE'          => 'negate',
-
-    #'BRIGHTNESS'      => 'brightness|75',
-    #'CONTRAST'        => 'contrast|-10',
-    
-    #'EDGEDETECT'      => 'edge',
-    #'EMBOSS'          => 'embosses',
-    #'SELECTIVE_BLUR'  => 'sblur',
-    #'MEAN_REMOVAL'    => 'sketchy',
-    #'SMOOTH'          => 'smooth|3',
-    #'PIXELATE'        => 'pixel|5|5'
+    #'CONTRAST'        => 'contrast|-20',
   );  
   
   
@@ -150,7 +141,12 @@ class Sprite {
    * PUBLIC METHODS
    ********************************/  
   
-  public function __construct() {}
+  public function __construct($options=false) {
+    if($options && is_array($options))
+      $this->setOptions($options);
+    
+    return $this;
+  }
   
   
   
@@ -158,9 +154,10 @@ class Sprite {
   public function generate(){
     
     $this->findSpriteItmes($this->getSourcePath());
+    $this->orderSpriteItems();
     $this->prepareItemPositions();
     $spriteSize = $this->calculateSpriteSize();
-
+    
     $this->spriteImage = @imagecreatetruecolor($spriteSize['width'],$spriteSize['height']);
     if($this->spriteImage){
       imagealphablending($this->spriteImage, false);
@@ -177,9 +174,9 @@ class Sprite {
       $this->addImageToSprite($itemProp);
     }
     
+    
     file_put_contents($this->getSavePath().$this->getCssPrefix().'.png', $this->getSpriteImageSource());
     file_put_contents($this->getSavePath().$this->getCssPrefix().'.css', $this->getCssData());
-    
   }
   
   /**
@@ -200,8 +197,6 @@ class Sprite {
    * @return string
    */
   public function getCssData(){
-    #$cssFileName = $this->destPath.$this->cssPrefix.".css";
-    
     $cssString = null;
     foreach($this->spriteItems as $cssName => $itemProp){
       $cssData = array(
@@ -216,14 +211,20 @@ class Sprite {
     }
     
     return $cssString;
-    
-//    if(file_put_contents($cssFileName, $this->cssString)){
-//      chmod($cssFileName, 0777);
-//      return true;
-//    }else{
-//      die('Could not create CSS File :' . $cssFileName);
-//    }    
   }   
+  
+  
+  
+  private function setOptions($options){
+    if(is_array($options) && !empty($options)){
+      foreach($options as $optionName => $optionValue){
+        $methodName = 'set'.ucfirst($optionName);
+        if(method_exists($this, 'set'.$optionName)){
+          $this->{$methodName}($optionValue);
+        }
+      }
+    }
+  }
   
   
   private function addImageToSprite($itemProp){
@@ -297,12 +298,30 @@ class Sprite {
         }
         
         // Include sub folders
-        elseif(is_dir($folder.$item) && $this->includeSubDir){
+        elseif(is_dir($folder.$item) && $this->getScanSubDir()){
           $this->findSpriteItmes($folder.$item.DS);
         }
       }
     }
   }
+  
+  private function orderSpriteItems(){
+    $newOrder = array();
+    foreach($this->spriteItems as $cssName => $path){
+      $newOrder[count(explode(".", trim($cssName,".")))][$cssName] = $path;
+    }
+
+    ksort($newOrder);
+    $this->spriteItems = array();
+
+    foreach($newOrder as $items){
+      ksort($items);
+      $this->spriteItems = array_merge($this->spriteItems, $items);
+    }       
+  }
+  
+  
+
   
   
   private function prepareItemPositions(){
@@ -313,13 +332,18 @@ class Sprite {
     $horizonPos   = 0;
     $maxHeight    = 0;
     
-    
-    // iterate over the filters
-    foreach($this->itemFilter as $filterSuffix => $cssSuffix){
-      // iterate of the itemList
-      foreach($this->spriteItems as $cssName => $file){
-        $imageMetaData = getimagesize($file);
+    // iterate of the itemList
+    foreach($this->spriteItems as $cssName => $file){
 
+      $imageMetaData = getimagesize($file);
+      
+      // Check is image filter is enabled
+      if(!$this->getEnableFilters())
+        $this->itemFilter = array('NO-FILTER'=>'');
+      
+      
+      // iterate over the filters
+      foreach($this->itemFilter as $filterSuffix => $cssSuffix){
         $imageWidth     = $imageMetaData[0];
         $imageHeight    = $imageMetaData[1];
         $imageMimeType  = $imageMetaData['mime'];
@@ -365,7 +389,6 @@ class Sprite {
         $horizonPos = $horizonPos+$offset;        
       }
     }
-    
     $this->spriteItems = $itemList;
   }   
   
@@ -380,6 +403,7 @@ class Sprite {
     $item = substr($item, 0, strrpos($item, "."));
     $item = implode(".", explode(DS, $item));
     $item = ".".ltrim($this->getCssPrefix(), ".#").".".strtolower($item);
+    #$item = ".".strtolower($item);
     return preg_replace("/[^a-z0-9_\.]+/i", "_", $item);
   }  
   
@@ -413,23 +437,6 @@ class Sprite {
    ********************************/
   
   /**
-   * sourceType setter
-   * allowed types ZIP or PATH
-   * @param string $type
-   */
-  public function setSourceType($type){
-    $this->sourceType = (strtoupper($type)=='ZIP') ? 'ZIP' : 'PATH';
-  }
-  
-  /**
-   * sourceType getter
-   * @return string
-   */
-  public function getSourceType(){
-    return $this->sourceType;
-  }
-  
-  /**
    * sourcePath setter
    * @param string $path
    */
@@ -439,6 +446,7 @@ class Sprite {
     }else{
       die("SOURCE PATH DOES NOT EXIST");
     }
+    return $this;
   }
   
   /**
@@ -460,6 +468,7 @@ class Sprite {
     }else{
       die("SAVE PATH DOES NOT EXIST");
     }
+    return $this;
   }
   
   /**
@@ -477,6 +486,7 @@ class Sprite {
    */
   public function setCssPrefix($val){
     $this->cssPrefix = $val;
+    return $this;
   }
   
   /**
@@ -494,6 +504,7 @@ class Sprite {
    */
   public function setCssFormat($val){
     $this->cssFormat = $val;
+    return $this;
   }
   
   /**
@@ -506,28 +517,48 @@ class Sprite {
   
   
   /**
-   * includeSubDir setter
+   * scanSubDir setter
    * @param bool $val
    */
-  public function setIncludeSubDir($val){
-    $this->includeSubDir = (bool)$val;
+  public function setScanSubDir($val){
+    $this->scanSubDir = (bool)$val;
+    return $this;
   }
   
   /**
-   * includeSubDir getter
+   * scanSubDir getter
    * @return boolean
    */
-  public function getIncludeSubDir(){
-    return (bool)$this->includeSubDir;
+  public function getScanSubDir(){
+    return (bool)$this->scanSubDir;
   }  
+  
+  
+  /**
+   * scanSubDir setter
+   * @param bool $val
+   */
+  public function setEnableFilters($val){
+    $this->enableFilters = (bool)$val;
+    return $this;
+  }
+  
+  /**
+   * scanSubDir getter
+   * @return boolean
+   */
+  public function getEnableFilters(){
+    return (bool)$this->enableFilters;
+  }    
   
   
   /**
    * spriteImageOffset setter
    * @param integer $val
    */
-  public function setSpriteImageOffse($val){
+  public function setSpriteImageOffset($val){
     $this->spriteImageOffset = (int)$val;
+    return $this;
   }
   
   /**
@@ -544,6 +575,7 @@ class Sprite {
    */
   public function setSpriteMaxWidth($val){
     $this->spriteMaxWidth = (int)$val;
+    return $this;
   }
   
   /**

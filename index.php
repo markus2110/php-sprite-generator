@@ -1,19 +1,30 @@
 <?php
 
-require_once 'lib/Sprite.php';
+require_once 'lib/SpriteGenerator.php';
 
 
 $sourcePath = dirname(__FILE__)."/test_icons/";
 $savePath = dirname(__FILE__).DS.'generated'.DS;
 
-mkdir($savePath, 0777, true);
+if(!file_exists($savePath))
+  mkdir($savePath, 0777, true);
 
-$S = new Sprite();
-$S->setSourceType('PATH');
-$S->setSourcePath($sourcePath);
-$S->setSavePath($savePath);
-$S->setIncludeSubDir(true);
-$S->generate();
+
+$options = array(
+    'SourcePath'  => $sourcePath,
+    'SavePath'    => $savePath,
+    'ScanSubDir'  => false,
+    'enableFilters' => false,
+    'SpriteImageOffset' => 0
+);
+
+$Sprite = new SpriteGenerator($options);
+$Sprite->setScanSubDir(true)
+        ->setEnableFilters(true)
+        ->setSpriteMaxWidth(500)
+        ->setSpriteImageOffset(1)
+        ->generate();
+
 
 #Sprite::dbug($S);
 #die;
@@ -22,10 +33,10 @@ $S->generate();
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="css/MySprite.css">
+    <link rel="stylesheet" type="text/css" href="generated/MySprite.css">
     
     <style>
-      textarea{width:90%;height:250px}
+      textarea{width:90%;height:500px}
     </style>
     
     
@@ -39,6 +50,8 @@ $S->generate();
     
     <textarea><?php echo $S->getCssData() ?></textarea>
     
+    
+    <div class="MySprite awsukiaw grey"></div>
 
     
     
