@@ -21,11 +21,12 @@ $options = array(
 $Sprite = new SpriteGenerator($options);
 $Sprite->setScanSubDir(true)
         ->setEnableFilters(true)
-        ->setSpriteMaxWidth(500)
-        ->setSpriteImageOffset(1)
+        ->setSpriteMaxWidth(100)
+        ->setSpriteImageOffset(0)
+        ->setCssMinimize(true)
         ->generate();
 
-
+$Sprite->getLessData();
 #Sprite::dbug($S);
 #die;
 
@@ -36,23 +37,25 @@ $Sprite->setScanSubDir(true)
     <link rel="stylesheet" type="text/css" href="generated/MySprite.css">
     
     <style>
-      textarea{width:90%;height:500px}
+      textarea{width:90%;height:200px}
     </style>
     
-    
+    <title>PHP Sprite generator</title>
   </head>
   <body>
+    <h1>PHP Sprite generator<h1>
     
     
-    <img src="data:image/png;base64,<?php echo base64_encode($S->getSpriteImageSource()) ?>" />
+    <img src="data:image/png;base64,<?php echo base64_encode($Sprite->getSpriteImageSource()) ?>" />
     
     <hr />
     
-    <textarea><?php echo $S->getCssData() ?></textarea>
+    <h3>CSS</h3>
+    <textarea><?php echo $Sprite->getCssData() ?></textarea>
     
+    <h3>LESS</h3>
+    <textarea><?php echo $Sprite->getLessData() ?></textarea>    
     
-    <div class="MySprite awsukiaw grey"></div>
-
     
     
     

@@ -29,11 +29,13 @@ class SpriteGenerator {
    */
   private $savePath = null;    
   
+  
   /**
    *
    * @var resource an image resource identifier
    */
   private $spriteImage = null;
+  
   
   /**
    * CSS class prefix
@@ -41,11 +43,20 @@ class SpriteGenerator {
    */
   private $cssPrefix    = "MySprite";  
   
+  
   /**
    * 
    * @var string
    */
-  private $cssFormat = "%s {background:url(%s) %dpx %dpx no-repeat;height:%dpx;width:%dpx;}";
+  private $cssFormat = "%s {background:url(%s) %dpx %dpx no-repeat;height:%dpx;width:%dpx}";
+  
+  
+  /**
+   * set to true, to minimize css data
+   * @var boolean
+   */
+  private $cssMinimize = false;
+  
   
   /**
    * Set to true, to include images from subdirectories to sprite
@@ -73,6 +84,7 @@ class SpriteGenerator {
    * @var integer
    */
   private $spriteMaxWidth = 1024;    
+  
   
   /**
    * The offset between images
@@ -148,9 +160,10 @@ class SpriteGenerator {
     return $this;
   }
   
-  
-  
-  
+  /**
+   * generates the sprite
+   * @return boolean
+   */
   public function generate(){
     
     $this->findSpriteItmes($this->getSourcePath());
@@ -178,6 +191,7 @@ class SpriteGenerator {
     file_put_contents($this->getSavePath().$this->getCssPrefix().'.png', $this->getSpriteImageSource());
     file_put_contents($this->getSavePath().$this->getCssPrefix().'.css', $this->getCssData());
   }
+  
   
   /**
    * 
@@ -207,15 +221,32 @@ class SpriteGenerator {
           'height'  => $itemProp['height'],
           'width'   => $itemProp['width'],
       );
-      $cssString .= vsprintf($this->getCssFormat(),$cssData)."\n";
+      $str = vsprintf($this->getCssFormat(),$cssData);
+      
+      if(!$this->getCssMinimize())
+        $str = str_replace(array("{","}",";"), array("{\n\t","\n}\n",";\n\t"), $str);
+      
+      $cssString .= $str."\n";
     }
     
     return $cssString;
   }   
   
   
+  /**
+   * 
+   * @return string
+   */
+  public function getLessData(){
+    return false;
+  }  
   
-  private function setOptions($options){
+  
+  /**
+   * Set generator options
+   * @param array $options
+   */
+  public function setOptions($options){
     if(is_array($options) && !empty($options)){
       foreach($options as $optionName => $optionValue){
         $methodName = 'set'.ucfirst($optionName);
@@ -227,6 +258,10 @@ class SpriteGenerator {
   }
   
   
+  /**
+   * adds the image to the sprite
+   * @param array $itemProp
+   */
   private function addImageToSprite($itemProp){
 
     switch($itemProp['type']){
@@ -280,8 +315,6 @@ class SpriteGenerator {
       imagedestroy($itemSource);  
     }    
   }  
-  
-  
  
   
   /**
@@ -304,7 +337,11 @@ class SpriteGenerator {
       }
     }
   }
+
   
+  /**
+   * orders sprite items
+   */
   private function orderSpriteItems(){
     $newOrder = array();
     foreach($this->spriteItems as $cssName => $path){
@@ -321,9 +358,9 @@ class SpriteGenerator {
   }
   
   
-
-  
-  
+  /**
+   * calculates the image position
+   */
   private function prepareItemPositions(){
     
     $itemList     = array();
@@ -420,6 +457,10 @@ class SpriteGenerator {
   }
   
   
+  /**
+   * calculates the total sprite height and width
+   * @return array
+   */
   private function calculateSpriteSize(){
     $maxWidth   = 0;
     $maxHeight  = 0;
@@ -449,6 +490,7 @@ class SpriteGenerator {
     return $this;
   }
   
+  
   /**
    * sourcePath getter
    * @return string
@@ -471,6 +513,7 @@ class SpriteGenerator {
     return $this;
   }
   
+  
   /**
    * savePath getter
    * @return string
@@ -488,6 +531,7 @@ class SpriteGenerator {
     $this->cssPrefix = $val;
     return $this;
   }
+  
   
   /**
    * cssPrefix getter
@@ -507,6 +551,7 @@ class SpriteGenerator {
     return $this;
   }
   
+  
   /**
    * cssFormat getter
    * @return string
@@ -517,6 +562,25 @@ class SpriteGenerator {
   
   
   /**
+   * cssMinimize setter
+   * @param bool $val
+   */
+  public function setCssMinimize($val){
+    $this->cssMinimize = (bool)$val;
+    return $this;
+  }
+  
+  
+  /**
+   * cssMinimize getter
+   * @return boolean
+   */
+  public function getCssMinimize(){
+    return $this->cssMinimize;
+  }   
+  
+  
+  /**
    * scanSubDir setter
    * @param bool $val
    */
@@ -524,6 +588,7 @@ class SpriteGenerator {
     $this->scanSubDir = (bool)$val;
     return $this;
   }
+  
   
   /**
    * scanSubDir getter
@@ -543,6 +608,7 @@ class SpriteGenerator {
     return $this;
   }
   
+  
   /**
    * scanSubDir getter
    * @return boolean
@@ -561,6 +627,7 @@ class SpriteGenerator {
     return $this;
   }
   
+  
   /**
    * spriteImageOffset getter
    * @return integer
@@ -568,6 +635,7 @@ class SpriteGenerator {
   public function getSpriteImageOffset(){
     return $this->spriteImageOffset;
   }    
+  
   
   /**
    * spriteMaxWidth setter
@@ -578,6 +646,7 @@ class SpriteGenerator {
     return $this;
   }
   
+  
   /**
    * spriteMaxWidth getter
    * @return integer
@@ -586,7 +655,7 @@ class SpriteGenerator {
     return $this->spriteMaxWidth;
   }   
   
-  
+
   
   /**
    * debug helper method
