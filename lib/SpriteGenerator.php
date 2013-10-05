@@ -1,11 +1,14 @@
 <?php
-
+// DIRECTORY_SEPARATOR shortcut
 defined('DS') || define('DS', DIRECTORY_SEPARATOR);
 
 /**
  * Description of SpriteGenerator
  *
- * @author Markus 
+ * Copyright (c) 2013 Markus Sommerfeld
+ * 
+ * @author Markus Sommerfeld
+ * @license MIT License (http://http://choosealicense.com/licenses/mit/)
  */
 class SpriteGenerator {
   
