@@ -41,12 +41,12 @@ $Sprite->generate();
 
 ##Public methods
 
-setCssFormat
-setCssPrefix
-setEnableFilters
-setOptions
-setSavePath
-setScanSubDir
-setSourcePath
-setSpriteImageOffset
-setSpriteMaxWidth
+    setCssFormat
+    setCssPrefix
+    setEnableFilters
+    setOptions
+    setSavePath
+    setScanSubDir
+    setSourcePath
+    setSpriteImageOffset
+    setSpriteMaxWidth
