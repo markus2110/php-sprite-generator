@@ -39,15 +39,15 @@ $Sprite->generate();
 ```
 
 
-##Public methods
+##Methods
 ```php
-setCssFormat(string)        default:"%s {background:url(%s) %dpx %dpx no-repeat;height:%dpx;width:%dpx}"
-setCssPrefix(string)
-setEnableFilters(boolean)
-setOptions(array)
-setSavePath(string)
-setScanSubDir(boolean)
-setSourcePath(string)
-setSpriteImageOffset(int)
-setSpriteMaxWidth(int)
+$Sprite->setCssFormat(string)        default="%s {background:url(%s) %dpx %dpx no-repeat;height:%dpx;width:%dpx}"
+$Sprite->setCssPrefix(string)        default="mysprite"
+$Sprite->setEnableFilters(boolean)   default=true
+$Sprite->setOptions(array)
+$Sprite->setSavePath(string)
+$Sprite->setScanSubDir(boolean)      default=false
+$Sprite->setSourcePath(string)
+$Sprite->setSpriteImageOffset(int)   default=2
+$Sprite->setSpriteMaxWidth(int)      default=500
 ```
