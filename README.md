@@ -1,11 +1,9 @@
-#php-sprite-generator
+#php sprite generator
 
-
-PHP library to generate a sprite image with necessary css classes
+This PHP library generates a sprite image and all necessary css classes
 
 
 ##Useage
-
 
 ###Use option setters
 ```php
@@ -39,3 +37,16 @@ $options = array(
 $Sprite = new SpriteGenerator($options);
 $Sprite->generate();
 ```
+
+
+##Public methods
+
+setCssFormat
+setCssPrefix
+setEnableFilters
+setOptions
+setSavePath
+setScanSubDir
+setSourcePath
+setSpriteImageOffset
+setSpriteMaxWidth
