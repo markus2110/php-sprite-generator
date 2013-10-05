@@ -1,34 +1,25 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- * Description of Sprite
- *
- * @author Markus
- */
-
-
 defined('DS') || define('DS', DIRECTORY_SEPARATOR);
 
+/**
+ * Description of SpriteGenerator
+ *
+ * @author Markus 
+ */
 class SpriteGenerator {
   
   /**
-   * Path to images
+   * Path to image folder
    * @var string
    */
   private $sourcePath = null;  
   
-  
   /**
-   * save path
+   * Save generated files to
    * @var string
    */
   private $savePath = null;    
-  
   
   /**
    *
@@ -36,41 +27,36 @@ class SpriteGenerator {
    */
   private $spriteImage = null;
   
-  
   /**
-   * CSS class prefix
+   * CSS class prefix & sprite image name
    * @var string
    */
-  private $cssPrefix    = "MySprite";  
-  
+  private $cssPrefix    = "mysprite";  
   
   /**
+   * CSS markup
+   * 
+   * cssPrefix fileName {
+   *  background:url(image.png) 16px 16px no-repeat;
+   *  height:32px;
+   *  width:32px
+   * }
    * 
    * @var string
    */
   private $cssFormat = "%s {background:url(%s) %dpx %dpx no-repeat;height:%dpx;width:%dpx}";
   
-  
   /**
-   * set to true, to minimize css data
-   * @var boolean
-   */
-  private $cssMinimize = false;
-  
-  
-  /**
-   * Set to true, to include images from subdirectories to sprite
+   * Set to true, to include images from subdirectories
    * @var boolean 
    */
   private $scanSubDir = false;
   
-  
   /**
-   * enables the image filter
+   * Enables the image filter
    * @var boolean 
    */
   private $enableFilters = true;
-  
   
   /**
    * List of images
@@ -78,20 +64,17 @@ class SpriteGenerator {
    */
   private $spriteItems = array();
   
-  
   /**
-   * The max sprite width
+   * The max. sprite width
    * @var integer
    */
-  private $spriteMaxWidth = 1024;    
-  
+  private $spriteMaxWidth = 500;
   
   /**
    * The offset between images
    * @var integer
    */
-  private $spriteImageOffset = 0;  
-  
+  private $spriteImageOffset = 2;  
   
   /**
    * List of allowed file (image) types
@@ -99,8 +82,10 @@ class SpriteGenerator {
    */
   private $allowedFileTypes = array('png','jpg', 'gif');  
   
-  
   /**
+   * GD image filters
+   * http://www.php.net/manual/en/function.imagefilter.php
+   * 
    * filtertype can be one of the following:
    *
    *  IMG_FILTER_NEGATE: Reverses all colors of the image.
@@ -136,111 +121,30 @@ class SpriteGenerator {
   private $itemFilter = array(
   // StyleName => Class Suddix|Filter Args1|Arg2|Arg3|Arg4
     'NO-FILTER'       => '',
-    #'BRIGHTNESS'      => 'brightness|40',
     'COLORIZE'        => 'colorize|0|0|0|64',
     'GRAYSCALE'       => 'grey',
-
+    
+    #'BRIGHTNESS'      => 'brightness|40',
     #'GAUSSIAN_BLUR'   => 'blur',
     #'NEGATE'          => 'negate',
     #'CONTRAST'        => 'contrast|-20',
   );  
   
   
-  
-  
-
   /********************************
    * PUBLIC METHODS
    ********************************/  
   
+  /**
+   * @param array $options
+   * @return \SpriteGenerator
+   */
   public function __construct($options=false) {
     if($options && is_array($options))
       $this->setOptions($options);
     
     return $this;
   }
-  
-  /**
-   * generates the sprite
-   * @return boolean
-   */
-  public function generate(){
-    
-    $this->findSpriteItmes($this->getSourcePath());
-    $this->orderSpriteItems();
-    $this->prepareItemPositions();
-    $spriteSize = $this->calculateSpriteSize();
-    
-    $this->spriteImage = @imagecreatetruecolor($spriteSize['width'],$spriteSize['height']);
-    if($this->spriteImage){
-      imagealphablending($this->spriteImage, false);
-      imagesavealpha($this->spriteImage, true);
-      // transparent
-      $trans_color = imagecolorallocatealpha($this->spriteImage, 255, 255, 255, 127);
-      imagefill($this->spriteImage, 0, 0, $trans_color);      
-    }
-    else{
-      return false;
-    }
-    
-    foreach($this->spriteItems as $cssName => $itemProp){
-      $this->addImageToSprite($itemProp);
-    }
-    
-    
-    file_put_contents($this->getSavePath().$this->getCssPrefix().'.png', $this->getSpriteImageSource());
-    file_put_contents($this->getSavePath().$this->getCssPrefix().'.css', $this->getCssData());
-  }
-  
-  
-  /**
-   * 
-   * @return type
-   */
-  public function getSpriteImageSource(){
-    ob_start();
-    imagepng($this->spriteImage);
-    $imageData = ob_get_contents();
-    ob_end_clean();    
-    return $imageData;
-  }
-
-  
-  /**
-   * 
-   * @return string
-   */
-  public function getCssData(){
-    $cssString = null;
-    foreach($this->spriteItems as $cssName => $itemProp){
-      $cssData = array(
-          'cssName' => $cssName,
-          'url'     => $this->getCssPrefix().'.png',
-          'h'       => -$itemProp['hPosStart'],
-          'v'       => -$itemProp['vPosStart'],
-          'height'  => $itemProp['height'],
-          'width'   => $itemProp['width'],
-      );
-      $str = vsprintf($this->getCssFormat(),$cssData);
-      
-      if(!$this->getCssMinimize())
-        $str = str_replace(array("{","}",";"), array("{\n\t","\n}\n",";\n\t"), $str);
-      
-      $cssString .= $str."\n";
-    }
-    
-    return $cssString;
-  }   
-  
-  
-  /**
-   * 
-   * @return string
-   */
-  public function getLessData(){
-    return false;
-  }  
-  
   
   /**
    * Set generator options
@@ -257,6 +161,97 @@ class SpriteGenerator {
     }
   }
   
+  /**
+   * Generates the sprite
+   * @return boolean
+   */
+  public function generate(){
+    
+    $this->findSpriteItmes($this->getSourcePath());
+    $this->orderSpriteItems();
+    $this->prepareItemPositions();
+    
+    if($this->prepareSpriteImage()){
+      foreach($this->spriteItems as $cssName => $itemProp){
+        $this->addImageToSprite($itemProp);
+      }
+      
+      $fileName = $this->getSavePath().strtolower($this->getCssPrefix());
+      file_put_contents($fileName.'.png', $this->getSpriteImageSource());
+      file_put_contents($fileName.'.css', $this->getCssData());
+      file_put_contents($fileName.'.min.css', $this->getCssData(true));
+      
+      return true;
+    }
+    else{
+      die("Could not create empty sprite image");
+    }
+  }
+  
+  /**
+   * Returns the binary image data
+   * @return type
+   */
+  public function getSpriteImageSource(){
+    ob_start();
+    imagepng($this->spriteImage);
+    $imageData = ob_get_contents();
+    ob_end_clean();    
+    return $imageData;
+  }
+  
+  /**
+   * Returns the generated css data
+   * @return string
+   */
+  public function getCssData($minimize=false){
+    $cssString = null;
+    foreach($this->spriteItems as $cssName => $itemProp){
+      $cssData = array(
+          'cssName' => ".".$this->getCssPrefix() . $cssName,
+          'url'     => $this->getCssPrefix().'.png',
+          'h'       => -$itemProp['hPosStart'],
+          'v'       => -$itemProp['vPosStart'],
+          'height'  => $itemProp['height'],
+          'width'   => $itemProp['width'],
+      );
+      $str = vsprintf($this->getCssFormat(),$cssData);
+      
+      if(!$minimize)
+        $str = str_replace(array("{","}",";"), array("{\n\t","\n}\n",";\n\t"), $str);
+      
+      $cssString .= $str."\n";
+    }
+    
+    return $cssString;
+  } 
+
+  
+  /*****************************************************************************
+   * PRIVATE METHODS
+   ****************************************************************************/   
+  
+  /**
+   * Creates an empty png file
+   * @return boolean
+   */
+  private function prepareSpriteImage(){
+    $spriteSize = $this->calculateSpriteSize();
+    
+    $this->spriteImage = @imagecreatetruecolor($spriteSize['width'],$spriteSize['height']);
+    if($this->spriteImage){
+      imagealphablending($this->spriteImage, false);
+      imagesavealpha($this->spriteImage, true);
+      // transparent
+      $trans_color = imagecolorallocatealpha($this->spriteImage, 255, 255, 255, 127);
+      imagefill($this->spriteImage, 0, 0, $trans_color);      
+      
+      return true;
+    }
+    else{
+      return false;
+    }    
+  }
   
   /**
    * adds the image to the sprite
@@ -315,7 +310,6 @@ class SpriteGenerator {
       imagedestroy($itemSource);  
     }    
   }  
- 
   
   /**
    * 
@@ -337,7 +331,6 @@ class SpriteGenerator {
       }
     }
   }
-
   
   /**
    * orders sprite items
@@ -356,7 +349,6 @@ class SpriteGenerator {
       $this->spriteItems = array_merge($this->spriteItems, $items);
     }       
   }
-  
   
   /**
    * calculates the image position
@@ -429,7 +421,6 @@ class SpriteGenerator {
     $this->spriteItems = $itemList;
   }   
   
-  
   /**
    * creates a save css class name
    * @param string $item
@@ -439,11 +430,11 @@ class SpriteGenerator {
     $item = str_replace($this->getSourcePath(), '', $item);
     $item = substr($item, 0, strrpos($item, "."));
     $item = implode(".", explode(DS, $item));
-    $item = ".".ltrim($this->getCssPrefix(), ".#").".".strtolower($item);
-    #$item = ".".strtolower($item);
-    return preg_replace("/[^a-z0-9_\.]+/i", "_", $item);
+    $item = preg_replace("/[^a-z0-9_\.]+/i", "_", $item);
+    $item = ".".strtolower($item);
+    
+    return strtolower($item);
   }  
-  
   
   /**
    * check is file allowed
@@ -455,7 +446,6 @@ class SpriteGenerator {
     $fileSuffix = substr($file, strrpos($file, ".")+1);
     return (in_array($fileSuffix, $this->allowedFileTypes));
   }
-  
   
   /**
    * calculates the total sprite height and width
@@ -470,12 +460,19 @@ class SpriteGenerator {
     }
     return array('width'=>$maxWidth,'height'=>$maxHeight);
   }   
+
   
+  /****************************************************************************
+   * SETTER and GETTER 
+   ****************************************************************************/
   
-  
-  /********************************
-   * SETTER & GETTER 
-   ********************************/
+  /**
+   * spriteItems getter
+   * @return array
+   */
+  public function getSpriteItems(){
+    return $this->spriteItems;
+  }
   
   /**
    * sourcePath setter
@@ -490,7 +487,6 @@ class SpriteGenerator {
     return $this;
   }
   
-  
   /**
    * sourcePath getter
    * @return string
@@ -498,7 +494,6 @@ class SpriteGenerator {
   public function getSourcePath(){
     return $this->sourcePath;
   }
-  
   
   /**
    * savePath setter
@@ -513,7 +508,6 @@ class SpriteGenerator {
     return $this;
   }
   
-  
   /**
    * savePath getter
    * @return string
@@ -521,7 +515,6 @@ class SpriteGenerator {
   public function getSavePath(){
     return $this->savePath;
   }  
-  
   
   /**
    * cssPrefix setter
@@ -532,7 +525,6 @@ class SpriteGenerator {
     return $this;
   }
   
-  
   /**
    * cssPrefix getter
    * @return string
@@ -540,7 +532,6 @@ class SpriteGenerator {
   public function getCssPrefix(){
     return $this->cssPrefix;
   }   
-  
   
   /**
    * cssFormat setter
@@ -551,7 +542,6 @@ class SpriteGenerator {
     return $this;
   }
   
-  
   /**
    * cssFormat getter
    * @return string
@@ -559,26 +549,6 @@ class SpriteGenerator {
   public function getCssFormat(){
     return $this->cssFormat;
   }    
-  
-  
-  /**
-   * cssMinimize setter
-   * @param bool $val
-   */
-  public function setCssMinimize($val){
-    $this->cssMinimize = (bool)$val;
-    return $this;
-  }
-  
-  
-  /**
-   * cssMinimize getter
-   * @return boolean
-   */
-  public function getCssMinimize(){
-    return $this->cssMinimize;
-  }   
-  
   
   /**
    * scanSubDir setter
@@ -589,7 +559,6 @@ class SpriteGenerator {
     return $this;
   }
   
-  
   /**
    * scanSubDir getter
    * @return boolean
@@ -597,7 +566,6 @@ class SpriteGenerator {
   public function getScanSubDir(){
     return (bool)$this->scanSubDir;
   }  
-  
   
   /**
    * scanSubDir setter
@@ -608,7 +576,6 @@ class SpriteGenerator {
     return $this;
   }
   
-  
   /**
    * scanSubDir getter
    * @return boolean
@@ -616,7 +583,6 @@ class SpriteGenerator {
   public function getEnableFilters(){
     return (bool)$this->enableFilters;
   }    
-  
   
   /**
    * spriteImageOffset setter
@@ -627,7 +593,6 @@ class SpriteGenerator {
     return $this;
   }
   
-  
   /**
    * spriteImageOffset getter
    * @return integer
@@ -635,7 +600,6 @@ class SpriteGenerator {
   public function getSpriteImageOffset(){
     return $this->spriteImageOffset;
   }    
-  
   
   /**
    * spriteMaxWidth setter
@@ -646,7 +610,6 @@ class SpriteGenerator {
     return $this;
   }
   
-  
   /**
    * spriteMaxWidth getter
    * @return integer
@@ -654,8 +617,11 @@ class SpriteGenerator {
   public function getSpriteMaxWidth(){
     return $this->spriteMaxWidth;
   }   
-  
 
+  
+  /****************************************************************************
+   * STATIC Methods
+   ****************************************************************************/
   
   /**
    * debug helper method
@@ -667,5 +633,4 @@ class SpriteGenerator {
     echo "</pre>";
   }  
 }
-
 ?>
