@@ -40,13 +40,14 @@ $Sprite->generate();
 
 
 ##Public methods
-
-    setCssFormat
-    setCssPrefix
-    setEnableFilters
-    setOptions
-    setSavePath
-    setScanSubDir
-    setSourcePath
-    setSpriteImageOffset
-    setSpriteMaxWidth
+```php
+setCssFormat(string)        default:"%s {background:url(%s) %dpx %dpx no-repeat;height:%dpx;width:%dpx}"
+setCssPrefix(string)
+setEnableFilters(boolean)
+setOptions(array)
+setSavePath(string)
+setScanSubDir(boolean)
+setSourcePath(string)
+setSpriteImageOffset(int)
+setSpriteMaxWidth(int)
+```
