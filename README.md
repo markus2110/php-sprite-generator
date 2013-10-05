@@ -39,7 +39,7 @@ $Sprite->generate();
 ```
 
 
-##Methods
+##Public methods
 ```php
 $Sprite->setCssFormat(string)        default="%s {background:url(%s) %dpx %dpx no-repeat;height:%dpx;width:%dpx}"
 $Sprite->setCssPrefix(string)        default="mysprite"
