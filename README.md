@@ -51,3 +51,5 @@ $Sprite->setSourcePath(string)
 $Sprite->setSpriteImageOffset(int)   default=2
 $Sprite->setSpriteMaxWidth(int)      default=500
 ```
+
+----------------------------
