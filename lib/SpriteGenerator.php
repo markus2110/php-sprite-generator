@@ -516,7 +516,7 @@ class SpriteGenerator {
    * @return string
    */
   public function getSavePath(){
-    return $this->savePath;
+      return $this->savePath;
   }  
   
   /**
