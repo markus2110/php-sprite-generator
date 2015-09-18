@@ -7,6 +7,9 @@
  */
 class ItemLocator {
 
+    /**
+     * 
+     */
     const DS = DIRECTORY_SEPARATOR;
 
     /**
@@ -15,7 +18,10 @@ class ItemLocator {
      */
     private $sources = array();
 
-
+    /**
+     *
+     * @var type
+     */
     private $currentSource = null;
 
     
@@ -56,8 +62,6 @@ class ItemLocator {
         }
     }
 
-
-
     /**
      * returns a list of defined sources
      * @return array
@@ -66,7 +70,10 @@ class ItemLocator {
         return $this->sources;
     }
 
-
+    /**
+     * returns a list of all usable items
+     * @return array
+     */
     public function getItems(){
 
         if(empty($this->items)){
@@ -76,8 +83,11 @@ class ItemLocator {
         return $this->items;
     }
 
-
-
+    /**
+     *
+     * @return array
+     * @throws InvalidArgumentException
+     */
     private function findItems(){
         foreach($this->getSources() as $souceFolder){
             if(!file_exists($souceFolder) || !is_dir($souceFolder)){
@@ -89,6 +99,9 @@ class ItemLocator {
             
             $this->currentSource = $souceFolder;
             $this->prepareItemList($souceFolder);
+
+            // remove currentSource
+            $this->currentSource = null;
         }
 
         $this->orderItems();
@@ -137,9 +150,9 @@ class ItemLocator {
         return strtolower($item);
     }
     
-
     /**
-     * orders sprite items
+     * orders the items
+     * @return void
      */
     private function orderItems() {
         $newOrder = array();
