@@ -54,9 +54,6 @@ class ItemLocator {
         if(!is_array($this->sources)){
             $this->sources = array($this->sources);
         }
-
-
-        $this->findItems();
     }
 
 
@@ -71,6 +68,11 @@ class ItemLocator {
 
 
     public function getItems(){
+
+        if(empty($this->items)){
+            $this->findItems();
+        }
+
         return $this->items;
     }
 
@@ -82,8 +84,10 @@ class ItemLocator {
                 throw new InvalidArgumentException(sprintf('NOT A DIRECTORY "%s"', $souceFolder));
             }
 
+            // remove trailing slash
+            $souceFolder = rtrim($souceFolder, "/");
+            
             $this->currentSource = $souceFolder;
-
             $this->prepareItemList($souceFolder);
         }
 
@@ -130,7 +134,6 @@ class ItemLocator {
         $item = substr($item, 0, strrpos($item, "."));
         $item = implode(".", explode(self::DS, $item));
         $item = preg_replace("/[^a-z0-9_\.]+/i", "_", $item);
-        $item = strtolower($item);
         return strtolower($item);
     }
     
