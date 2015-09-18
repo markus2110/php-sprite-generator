@@ -23,7 +23,7 @@ $options = array(
         dirname(__FILE__)."/test_icons/iconset2",
     ),
     'SavePath'    => $savePath,
-    'SpriteMaxWidth' => 100,
+    #'SpriteMaxWidth' => 100,
 //    'ScanSubDir'  => false,
 //    'enableFilters' => false,
 //    'SpriteImageOffset' => 0
@@ -49,6 +49,10 @@ $Sprite->generate();
       textarea{width:90%;height:200px}
       
       a{text-decoration: none;padding:5px;}
+
+      .mysprite{
+          display: inline-block;
+      }
     </style>
     
     <title>PHP Sprite generator</title>
@@ -62,7 +66,16 @@ $Sprite->generate();
     
     <h3>CSS</h3>
     <textarea><?php echo $Sprite->getCssData() ?></textarea>
-    <br /><br />
+    <br />
+
+    <hr />
+
+    <?php foreach($Sprite->getSpriteItems() as $className => $props) : ?>
+    <button class="btn">
+      <?php echo $className ?>
+      <i class="<?php echo $Sprite->getCssPrefix() ?> <?php echo str_replace(".", " ", $className) ?>"></i>
+    </button>
+    <?php endforeach; ?>
     
   </body>
 </html>
