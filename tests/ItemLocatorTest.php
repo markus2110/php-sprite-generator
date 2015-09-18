@@ -1,9 +1,5 @@
 <?php
 
-
-require_once '../lib/ItemLocator.php';
-
-
 /**
  * Description of ItemLocatorTest
  *
