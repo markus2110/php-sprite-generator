@@ -1,29 +1,40 @@
 <?php
 
-require_once 'lib/SpriteGenerator.php';
+function __autoload($class_name) {
+    $class = 'lib/'.$class_name.".php";
+    include_once $class;
+}
 
 
 $sourcePath = dirname(__FILE__)."/test_icons/";
-$savePath = dirname(__FILE__).DS.'generated'.DS;
+$savePath = dirname(__FILE__).'/generated/';
 
-if(!file_exists($savePath))
+if(!file_exists($savePath)){
   mkdir($savePath, 0777, true);
+}
 
 
 $options = array(
-    'SourcePath'  => $sourcePath,
+
+    'SourcePath'  => dirname(__FILE__)."/test_icons/iconset1",
+
+    'SourcePath'  => array(
+        dirname(__FILE__)."/test_icons/iconset1",
+        dirname(__FILE__)."/test_icons/iconset2",
+    ),
     'SavePath'    => $savePath,
-    'ScanSubDir'  => false,
-    'enableFilters' => false,
-    'SpriteImageOffset' => 0
+//    'ScanSubDir'  => false,
+//    'enableFilters' => false,
+//    'SpriteImageOffset' => 0
 );
 
 $Sprite = new SpriteGenerator($options);
-$Sprite->setScanSubDir(true)
-        ->setEnableFilters(true)
-        ->setSpriteMaxWidth(250)
-        ->setSpriteImageOffset(0)
-        ->generate();
+$Sprite->generate();
+//$Sprite->setScanSubDir(true)
+//        ->setEnableFilters(true)
+//        ->setSpriteMaxWidth(250)
+//        ->setSpriteImageOffset(0)
+//        ->generate();
 
 ?>
 <!DOCTYPE html>
