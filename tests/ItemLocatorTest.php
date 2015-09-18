@@ -47,6 +47,40 @@ class ItemLocatorTest extends PHPUnit_Framework_TestCase{
     }
 
 
+    public function testCorrectPath()
+    {
+        $sources = array(
+            "../test_icons/iconset1",
+            "../test_icons/iconset2/"
+        );
+        $a = new ItemLocator($sources);
+
+        foreach($a->getItems() as $key => $path){
+            $this->assertNotContains("//", $path);
+        }
+    }
+
+
+    public function testCorrectKey()
+    {
+        $sources = array(
+            "../test_icons/iconset1",
+            "../test_icons/iconset2/"
+        );
+        $a = new ItemLocator($sources);
+
+        foreach($a->getItems() as $key => $path){
+
+            // check key for double dot
+            $this->assertNotContains("..", $key);
+
+            // check, does the key start with .
+            $this->assertStringStartsWith(".", $key);
+
+        }
+    }
+
+
     /**
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage NOT A DIRECTORY
@@ -58,6 +92,7 @@ class ItemLocatorTest extends PHPUnit_Framework_TestCase{
             "../test_icons/iconset4"
         );
         $a = new ItemLocator($sources);
+        $a->getItems();
     }
 
 
