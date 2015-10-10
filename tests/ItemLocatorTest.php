@@ -10,6 +10,7 @@ class ItemLocatorTest extends PHPUnit_Framework_TestCase{
 
     const MUST_HAVE_ICONS = 15;
 
+    
 
     /**
      * @expectedException InvalidArgumentException
